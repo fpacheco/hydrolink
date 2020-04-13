@@ -1,2 +1,2 @@
-# hydrolink
-Hydrolink for EFDCMPI to WASP8
+To compile:
+gfortran -fno-underscoring -L. hydrolink.f95 -lhydrolink -o hydrolink
