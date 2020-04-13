@@ -327,10 +327,11 @@
          If(ANS .eq. 'A' .or. ANS .eq. 'a')binary=.false.
          If(ANS .eq. 'B' .or. ANS .eq. 'b')binary=.true.
 !=======================================================================
-         write(6,*)'Enter File Type (E=EFDC, D=DYNHYD, R=EPDRIV1, H=HECRAS)'
+         write(6,*)'Enter File Type (E=EFDC, M=EFDCMPI, D=DYNHYD, R=EPDRIV1, H=HECRAS)'
          read(5,*)ANS
          write(10,1060)ANS
          If(ANS .eq. 'E' .or. ANS .eq. 'e')EFDC=.true.
+         If(ANS .eq. 'M' .or. ANS .eq. 'm')EFDCMPI=.true.
          If(ANS .eq. 'D' .or. ANS .eq. 'd')DYNHYD=.true.
          If(ANS .eq. 'R' .or. ANS .eq. 'r')EPDRIV1=.true.
          If(ANS .eq. 'H' .or. ANS .eq. 'h')HECRAS=.true.
@@ -391,6 +392,7 @@
          close(unit=10)
       End If
       if(EFDC)MODTYPE    =1
+      if(EFDCMPI)MODTYPE =1
       if(DYNHYD)MODTYPE  =2
       if(EPDRIV1)MODTYPE =3
       if(HECRAS)MODTYPE  =2
@@ -449,12 +451,12 @@
 !=======================================================================
       write(6,*)'Setting Seed Moment'
       IF (.not. HECRAS) THEN
-      call hlsetseedmoment(Ihl_handle, istartmonth, istartday,istartyear, istarthour, istartminute, istartsecond, ierror)
-      if(ierror .gt. 0)then
-          call hlgetlasterror(errstring)
-          write(6,6000) ierror, errstring
-          stop
-      end if
+          call hlsetseedmoment(Ihl_handle, istartmonth, istartday,istartyear, istarthour, istartminute, istartsecond, ierror)
+          if(ierror .gt. 0)then
+              call hlgetlasterror(errstring)
+              write(6,6000) ierror, errstring
+              stop
+          end if
       ENDIF
 !=======================================================================
 ! Read the Header from Hydrodynamic Linkage File
@@ -465,6 +467,7 @@
          IF (DYNHYD)READ(1)NOSEG,NUMFLOW, HDT, START,END,NUM_LAYER
       ELSE
          IF(EFDC)READ(1,*)NOSEG,NUMFLOW, NUMDHT, HDT, START,END, NUM_LAYER
+         IF(EFDCMPI)READ(1,*)NOSEG,NUMFLOW, NUMDHT, HDT, START,END, NUM_LAYER
          IF(DYNHYD)READ(1,*)NOSEG,NUMFLOW, HDT, START,END,NUM_LAYER
          IF(HECRAS)Then
             READ(1,*)NOSEG,NUMFLOW, HDT, IMON, IDAY, IYEAR, IHour, Imin,NUM_LAYER
