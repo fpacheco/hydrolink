@@ -63,3 +63,12 @@ Need to output from EFDC-MPI (https://github.com/fearghalodonncha/EFDC-MPI) to W
 * hlsettimestep
 * hlsetupdateint
 * hlsetvartimestep
+
+## From EFDC-MPI to WASP8
+1. EFDC-MPI outputs are NetCDF4 files
+2. You need others
+
+## Test
+Put lihydrolink.so in your path or in LD_LIBRAY_PATH:
+* export LD_LIBRARY_PATH=/disco_local/rpacheco/USEPA-WASP8.32/wasp/lib:/disco_local/rpacheco/workspace/hydrolink/old
+* python -m unittest

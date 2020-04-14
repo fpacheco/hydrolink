@@ -40,8 +40,10 @@ class Wasp(object):
         """
         if not libpath:
             # Get LD_LIBRARY_PATH
-            ldp = os.environ['LD_LIBRARY_PATH'].split(':')
-            # Append current
+            ldp = list()
+            if 'LD_LIBRARY_PATH' in os.environ:
+                ldp = os.environ['LD_LIBRARY_PATH'].split(':')
+            # Append current directory
             ldp.append(os.getcwd())
             # Is there?
             for p in ldp:
