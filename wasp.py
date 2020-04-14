@@ -34,9 +34,12 @@ class Wasp(object):
     def __init__(self, libname=LIB_NAME, libpath=None):
         """Initialization for class
 
-        Keyword arguments:
-        argument -- description
-        Return: return_description
+        Seach and load the library ... else exit.
+
+        Args:
+            libname (str): The library name (libhydrolink.so on GNU/Linux)
+            libpath (str): The path where we search for the file
+
         """
         if not libpath:
             # Get LD_LIBRARY_PATH
@@ -61,16 +64,34 @@ class Wasp(object):
         self.dlevel = -1
 
     def setDebug(self, dlevel=0):
+        """Set the libhydrogeo debug level
+
+        Seach and load the library.
+
+        Args:
+            dlevel (int): Set the level. Greather than O to get log outputs in log files.
+        """
         d = ct.c_int(dlevel)
         self.hydro.hlsetdebug(ct.byref(d))
         self.dlevel = dlevel
 
     def getLastError(self):
+        """Get last libhydrogeo error.
+
+        Returns:
+            str: The string with the error
+        """
         m = ct.c_char_p(b''*72)
         self.hydro.hlgetlasterror(m)
         return m.value.decode('utf-8')
 
-    def open(self, fpath, fmode=OPEN_READ):
+    def open(self, fpath, fmode=OPEN_WRITE):
+        """Open file for reading or writing
+
+        Args:
+            fpath (str): The file path for open.
+            fmode (int): 0 = read; 1 = write.
+        """
         fp = ct.c_char_p(fpath.encode())
         fm =  ct.c_int(fmode)
         fh = ct.c_int(0)
@@ -86,6 +107,7 @@ class Wasp(object):
             self.hndl = ct.byref(fh)
 
     def close(self):
+        """Close an opened file"""
         ie = ct.c_int(0)
         if self.hndl:
             self.hydro.hlclose(self.hndl, ct.byref(ie))
@@ -93,6 +115,11 @@ class Wasp(object):
             print(self.getLastError())
 
     def compactFactor(self):
+        """Get compression factor for the file.
+
+        Returns:
+            int: The compact factor
+        """
         cf = ct.c_int(1)
         ie = ct.c_int(0)
         if self.hndl:
@@ -103,6 +130,13 @@ class Wasp(object):
             self.cf = cf.value*100
 
     def setLang(self, lang=LANG_C):
+        """Set programming language for the library
+
+        Fortran use base 1 arrays. C, C++, python use base 0.
+
+        Args:
+            lang (int): 0 = C; 1 = Fortran.
+        """
         fl = ct.c_int(lang)
         ie = ct.c_int(0)
         self.hydro.hlsetlanguage(self.hndl, ct.byref(fl), ct.byref(ie))
@@ -110,6 +144,13 @@ class Wasp(object):
             print(self.getLastError())
 
     def setCreator(self, creator=CREATOR_EFDCMPI):
+        """Inform the library who is the creator for this HYD file
+
+        libhydrolink recognizes EFDC, HECRAS, DYNHYD, EPDRIV1 = 3
+
+        Args:
+            creator (int): 1 = EFDC and EFDCMPI ; 2 = HECRAS and DYNHYD, 3=EPDRIV1.
+        """
         fc =  ct.c_int(creator)
         ie = ct.c_int(0)
         self.hydro.hlsetcreator(self.hndl, ct.byref(fc), ct.byref(ie))
@@ -117,6 +158,11 @@ class Wasp(object):
             print(self.getLastError())
 
     def setDescriptions(self, desc=list()):
+        """Add descriptions to the HYD file
+
+        Args:
+            desc (list): List of string with descriptions
+        """
         if len(desc) > 0:
             n = len(desc)
             for i in range(n):
@@ -135,6 +181,11 @@ class Wasp(object):
         self.desc = desc
 
     def setAuthor(self, author):
+        """Add autor to the HYD file
+
+        Args:
+            author (str): The autor name
+        """
         fd =  ct.c_char_p(author.encode())
         # 1 for modeller name
         dd = ct.c_int(1)
@@ -151,6 +202,11 @@ class Wasp(object):
             self.author = author
 
     def setMoment(self, dt):
+        """Set the initial time and date for th hydrodynamic information in the linkage file.
+
+        Args:
+            dt (datetime.datetime): The date and time.
+        """
         ida = ct.c_int(dt.day)
         imo = ct.c_int(dt.month)
         iye = ct.c_int(dt.year)
@@ -173,7 +229,12 @@ class Wasp(object):
         else:
             self.moment = dt
 
-    def setNumLay(self, nlays):
+    def setNumLay(self, nlays=1):
+        """Set the number of layers for the hydrodynamic information in the linkage file.
+
+        Args:
+            nlays (int): The number of layers in the model.
+        """
         fn = ct.c_int(nlays)
         ie = ct.c_int(0)
         self.hydro.hlsetnumlayers(self.hndl, ct.byref(fn), ct.byref(ie))
@@ -183,6 +244,11 @@ class Wasp(object):
             self.nlays = nlays
 
     def setNumSeg(self, nsegs):
+        """Set the number of segments for the hydrodynamic information in the linkage file.
+
+        Args:
+            nsegs (int): The number of segments in the model.
+        """
         fn = ct.c_int(nsegs)
         ie = ct.c_int(0)
         self.hydro.hlsetnumsegments(self.hndl, ct.byref(fn), ct.byref(ie))
@@ -192,6 +258,11 @@ class Wasp(object):
             self.nsegs = nsegs
 
     def setSegNames(self, segsn=list()):
+        """Set segments names.
+
+        Args:
+            segsn (list): A list with segments names.
+        """
         if len(segsn) > 0:
             n = len(segsn)
             for i in range(n):
