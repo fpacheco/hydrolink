@@ -1,4 +1,4 @@
-from ctypes import *
+from ctypes import byref, c_int, c_char, c_char_p, cdll
 """
 000000000000e420 T hladddescription
 0000000000016fc0 T hlclose
@@ -58,7 +58,24 @@ from ctypes import *
 # Load the library 
 lhydro = cdll.LoadLibrary("libhydrolink.so")
 
-tint = c_int(1)
-lhydro.hlsetdebug(tint)
+def hlsetdebug(dlevel):
+	d = c_int(dlevel)
+	return lhydro.hlsetdebug(byref(d))	
+
+def hlgetlasterror():
+	m = c_char_p('')
+	g = lhydro.hlgetlasterror(byref(m))
+	return m
+
+def hlopen(fpath, ):
+	pass
+
+def hlclose(hdl):
+	pass
+
+
+d = c_int(1)
+lhydro.hlsetdebug(byref(d))
 
 lhydro.hlopen ('Pocho', 0, Ihl_handle,Ierror)
+
