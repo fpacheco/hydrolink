@@ -1,25 +1,27 @@
+"""This module is a wrapper for libhydrogeo (WASP 8)"""
 import sys
 import os
 import datetime
 import ctypes as ct
 
-## Hydrolink library name
+# Hydrolink library name
 if 'linux' in sys.platform:
     LIB_NAME = 'libhydrolink.so'
 elif 'win' in sys.platform:
     LIB_NAME = 'hydrolink.dll'
 elif 'darwin' in sys.platform:
+    # Dont know!
     LIB_NAME = 'hydrolink.dll'
 else:
     print('Dont know your platform!')
 
-## Open files for
+# Open files for
 OPEN_READ = 0
 OPEN_WRITE = 1
-## Languages
+# Languages
 LANG_C = 0
 LANG_FORTRAN = 1
-## Creator
+# Creator
 CREATOR_EFDC = 1
 CREATOR_EFDCMPI = 1
 CREATOR_DYNHYD = 2
@@ -30,9 +32,15 @@ CREATOR_HECRAS = 2
 class Wasp(object):
 
     def __init__(self, libname=LIB_NAME, libpath=None):
+        """Initialization for class
+
+        Keyword arguments:
+        argument -- description
+        Return: return_description
+        """
         if not libpath:
             # Get LD_LIBRARY_PATH
-            ldp = os.environ['LD_LIBRARY_PATH']
+            ldp = os.environ['LD_LIBRARY_PATH'].split(':')
             # Append current
             ldp.append(os.getcwd())
             # Is there?
@@ -42,9 +50,10 @@ class Wasp(object):
                     libpath = p
                     break
         if not libpath:
-            exit(-1)
+            print('Can NOT find {}'.format(LIB_NAME))
+            sys.exit(-1)
         self.lpath = os.path.join(libpath, libname)
-        self.hydro = ct.cdll.LoadLibrary(lpath)
+        self.hydro = ct.cdll.LoadLibrary(self.lpath)
         self.cfpath = None
         self.hndl = None
         self.dlevel = -1
@@ -71,17 +80,27 @@ class Wasp(object):
         else:
             # Raw fh
             self.cfpath = fpath
-            self.hndl = fh
+            # By ref!
+            self.hndl = ct.byref(fh)
 
     def close(self):
         ie = ct.c_int(0)
         if self.hndl:
-            hydro.hlclose(self.hndl, ct.byref(ie))
+            self.hydro.hlclose(self.hndl, ct.byref(ie))
         if ie.value > 0:
             print(self.getLastError())
-            self.hndl = -1
 
-    def setLang(self, lang=LANG_FORTRAN):
+    def compactFactor(self):
+        cf = ct.c_int(1)
+        ie = ct.c_int(0)
+        if self.hndl:
+            self.hydro.hlgetcompfact(self.hndl, ct.byref(cf), ct.byref(ie))
+        if ie.value > 0:
+            print(self.getLastError())
+        else:
+            self.cf = cf.value*100
+
+    def setLang(self, lang=LANG_C):
         fl = ct.c_int(lang)
         ie = ct.c_int(0)
         self.hydro.hlsetlanguage(self.hndl, ct.byref(fl), ct.byref(ie))
@@ -93,13 +112,14 @@ class Wasp(object):
         ie = ct.c_int(0)
         self.hydro.hlsetcreator(self.hndl, ct.byref(fc), ct.byref(ie))
         if ie.value > 0:
-            print(hlgetlasterror())
+            print(self.getLastError())
 
     def setDescriptions(self, desc=list()):
         if len(desc) > 0:
             n = len(desc)
             for i in range(n):
                 fd =  ct.c_char_p(desc[i].encode())
+                # 0 for decriptions
                 dd = ct.c_int(0)
                 ie = ct.c_int(0)
                 self.hydro.hladddescription(
@@ -113,8 +133,20 @@ class Wasp(object):
         self.desc = desc
 
     def setAuthor(self, author):
-        self.author = author
-        pass
+        fd =  ct.c_char_p(author.encode())
+        # 1 for modeller name
+        dd = ct.c_int(1)
+        ie = ct.c_int(0)
+        self.hydro.hladddescription(
+            self.hndl,
+            ct.byref(dd),
+            fd,
+            ct.byref(ie)
+        )
+        if ie.value > 0:
+            print(self.getLastError())
+        else:
+            self.author = author
 
     def setMoment(self, dt):
         ida = ct.c_int(dt.day)
@@ -173,54 +205,3 @@ class Wasp(object):
                 if ie.value > 0:
                     print(self.getLastError())
         self.segsn = segsn
-
-
-"""
-hlsetdebug(100)
-hlgetlasterror()
-# Open the file (create)
-hndl = hlopen('PRUEBA.HYD', OPEN_WRITE)
-# Set fortran
-hlsetlanguage(hndl,LANG_FORTRAN)
-# Add descriptions
-hladddescription(hndl, 'Descripcion 1')
-hladddescription(hndl, 'Descripcion 2')
-hladddescription(hndl, 'Descripcion 3')
-# Set creator
-hlsetcreator(hndl, CREATOR_EFDCMPI)
-# If not HECRAS
-dt = datetime.datetime(2019,1,1,0,0,0)
-hlsetseedmoment(hndl, dt)
-# Some data
-NOSEG = 100
-NUMFLOW = 120
-NUMDHT = 1
-HDT = 1
-START = 1
-END = 1
-NUM_LAYER = 1
-#Allocate (IQ(NUMFLOW))
-#Allocate (JQ(NUMFLOW))
-#Allocate (IFLOWDIR(NUMFLOW))
-#Allocate (SEGVOLUME(NOSEG))
-#Allocate (SEGDEPTH(NOSEG))
-#Allocate (SEGVEL(NOSEG))
-#Allocate (Flow(NUMFLOW))
-#Allocate (CRNU(NUMFLOW))
-#Allocate (BRINTT(NUMFLOW))
-#Allocate (SegSal(NOSEG))
-#Allocate (SegTemp(NOSEG))
-
-hlsetnumlayers(hndl,NUM_LAYER)
-hlsetnumsegments(hndl,NOSEG)
-for i in range(NOSEG):
-    ss = 'WASP-SEG-{}'.format(i+1)
-    hlsetsegname(hndl,i+1,ss)
-# Close the file
-hlclose(hndl)
-
-## Ver https://docs.python.org/3/library/ctypes.html
-# class POINT(Structure):
-#    _fields_ = [("x", ct.c_int), ("y", ct.c_int)]
-# point = POINT(10, 20)
-"""
