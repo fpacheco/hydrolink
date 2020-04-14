@@ -18,19 +18,25 @@ else:
 # Open files for
 OPEN_READ = 0
 OPEN_WRITE = 1
-# Languages
+# Languages (base arrays)
 LANG_C = 0
 LANG_FORTRAN = 1
-# Creator
+# Creator (to inform Wasp)
 CREATOR_EFDC = 1
 CREATOR_EFDCMPI = 1
 CREATOR_DYNHYD = 2
 CREATOR_EPDRIV1 = 3
 CREATOR_HECRAS = 2
 # Segment data type
-SEG_VOLS = 1
-SEG_DEPS = 2
-SEG_VELS = 3
+# 1=Segment Volume (m3), 2=Segment Depth (m), 3=Segment Velocity (m/sec)
+SEG_VOL = 1
+SEG_DEP = 2
+SEG_VEL = 3
+# Flow data type
+# 1 = Advective flow, 2= Dispersive flow
+FLOW_ADV = 1
+FLOW_DIS = 2
+
 
 class Wasp(object):
 
@@ -306,21 +312,19 @@ class Wasp(object):
             data (list): List of floats with data
         """
         n = len(data)
-        av = (ct.c_double * n)()
+        ad = (ct.c_double * n)()
         for i in range(n):
-            av[i] = data[i]
+            ad[i] = data[i]
         si = ct.c_int(stype)
         ie = ct.c_int(0)
         self.hydro.hlsetseginfo(
             self.hndl,
             ct.byref(si),
-            ct.byref(av),
+            ct.byref(ad),
             ct.byref(ie)
         )
         if ie.value > 0:
             print(self.getLastError())
-        else:
-            self.ts = ts
 
     def setSegVolume(self, vols):
         """Set segments volumes.
@@ -329,6 +333,7 @@ class Wasp(object):
             vols (list): List of floats with segments volumes
         """
         self._setSegData(SEG_VOLS, vols)
+        self.vols = vols
 
     def setSegDepth(self, deps):
         """Set segments depths.
@@ -337,6 +342,7 @@ class Wasp(object):
             deps (list): List of floats with segments depths
         """
         self._setSegData(SEG_DEPS, deps)
+        self.deps = deps
 
     def setSegVelocity(self, vels):
         """Set segments velocities.
@@ -345,3 +351,44 @@ class Wasp(object):
             vels (list): List of floats with segments velocities
         """
         self._setSegData(SEG_VELS, vels)
+        self.vels = vels
+
+    def _setFlowData(self, ftype, data):
+        """Set flow data.
+
+        Args:
+            ftype (int): Type information. 1=Advective flow, 2=Dispersive flow
+            data (list): List of floats with data
+        """
+        n = len(data)
+        ad = (ct.c_double * n)()
+        for i in range(n):
+            ad[i] = data[i]
+        si = ct.c_int(ftype)
+        ie = ct.c_int(0)
+        self.hydro.hlsetflowinfo(
+            self.hndl,
+            ct.byref(si),
+            ct.byref(ad),
+            ct.byref(ie)
+        )
+        if ie.value > 0:
+            print(self.getLastError())
+
+    def setFlowAdvect(self, fadvs):
+        """Set advective flows
+
+        Args:
+            fadvs (list): List of floats with advective flows
+        """
+        self._setFlowData(FLOW_ADV, fadvs)
+        self.fadvs = fadvs
+
+    def setFlowDisps(self, fdisps):
+        """Set dispersive flows
+
+        Args:
+            fdisps (list): List of floats with advective flows
+        """
+        self._setFlowData(FLOW_DIS, fdisps)
+        self.fdisps = fdisps
