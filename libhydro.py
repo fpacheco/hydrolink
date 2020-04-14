@@ -1,3 +1,4 @@
+import ctypes as ct
 from ctypes import byref, c_int, c_char, c_char_p, cdll
 """
 000000000000e420 T hladddescription
@@ -55,27 +56,31 @@ from ctypes import byref, c_int, c_char, c_char_p, cdll
 0000000000013890 T hlsetupdateint
 0000000000012c80 T hlsetvartimestep
 """
+### Interface
 # Load the library 
-lhydro = cdll.LoadLibrary("libhydrolink.so")
+hydro = ct.cdll.LoadLibrary("libhydrolink.so")
+# Define
+_hlsetdebug = hydro.hlsetdebug
+_hlsetdebug.restype = ct.c_int
+_hlsetdebug.argtypes = [ct.byref(ct.c_int)]
+
+_hlgetlasterror = hydro.hlgetlasterror
+_hlgetlasterror.restype = ct.c_char_p
+_hlgetlasterror.argtypes = [ct.byref(ct.c_char_p)]
+###
 
 def hlsetdebug(dlevel):
-	d = c_int(dlevel)
-	return lhydro.hlsetdebug(byref(d))	
+    d = ct.c_int(dlevel)
+    return hydro.hlsetdebug(byref(d))    
 
 def hlgetlasterror():
-	m = c_char_p('')
-	g = lhydro.hlgetlasterror(byref(m))
-	return m
+    m = ct.c_char_p(b''*72)
+    g = hydro.hlgetlasterror(byref(m))
+    return m
 
-def hlopen(fpath, ):
-	pass
+def hlopen(fpath):
+    pass
 
 def hlclose(hdl):
-	pass
-
-
-d = c_int(1)
-lhydro.hlsetdebug(byref(d))
-
-lhydro.hlopen ('Pocho', 0, Ihl_handle,Ierror)
+    pass
 
