@@ -27,7 +27,10 @@ CREATOR_EFDCMPI = 1
 CREATOR_DYNHYD = 2
 CREATOR_EPDRIV1 = 3
 CREATOR_HECRAS = 2
-
+# Segment data type
+SEG_VOLS = 1
+SEG_DEPS = 2
+SEG_VELS = 3
 
 class Wasp(object):
 
@@ -278,3 +281,67 @@ class Wasp(object):
                 if ie.value > 0:
                     print(self.getLastError())
         self.segsn = segsn
+
+    def setTimeStep(self, ts):
+        """specifies  the  timestep  that  is  used  for  the  hydrodynamic  model  simulation.
+
+        This value only needs to be set once
+
+        Args:
+            ts (int): The time step used in the hydrodynamic models.
+        """
+        ts = ct.c_int(ts)
+        ie = ct.c_int(0)
+        self.hydro.hlsethydtimestep(self.hndl, ct.byref(ts), ct.byref(ie))
+        if ie.value > 0:
+            print(self.getLastError())
+        else:
+            self.ts = ts
+
+    def _setSegData(self, stype, data):
+        """Set segments data.
+
+        Args:
+            stype (int): Type information. 1=Segment Volume (m3), 2=Segment Depth (m), 3=Segment Velocity (m/sec)
+            data (list): List of floats with data
+        """
+        n = len(data)
+        av = (ct.c_double * n)()
+        for i in range(n):
+            av[i] = data[i]
+        si = ct.c_int(stype)
+        ie = ct.c_int(0)
+        self.hydro.hlsetseginfo(
+            self.hndl,
+            ct.byref(si),
+            ct.byref(av),
+            ct.byref(ie)
+        )
+        if ie.value > 0:
+            print(self.getLastError())
+        else:
+            self.ts = ts
+
+    def setSegVolume(self, vols):
+        """Set segments volumes.
+
+        Args:
+            vols (list): List of floats with segments volumes
+        """
+        self._setSegData(SEG_VOLS, vols)
+
+    def setSegDepth(self, deps):
+        """Set segments depths.
+
+        Args:
+            deps (list): List of floats with segments depths
+        """
+        self._setSegData(SEG_DEPS, deps)
+
+    def setSegVelocity(self, vels):
+        """Set segments velocities.
+
+        Args:
+            vels (list): List of floats with segments velocities
+        """
+        self._setSegData(SEG_VELS, vels)
