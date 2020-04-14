@@ -27,6 +27,9 @@ CREATOR_EFDCMPI = 1
 CREATOR_DYNHYD = 2
 CREATOR_EPDRIV1 = 3
 CREATOR_HECRAS = 2
+# Number of constituents in HYD files
+NUM_MAX_SEGCONST = 5        # VOLUMEN, DEPTH, VELOCITY, TEMPERATURE, SALINITY
+NUM_MAX_FPCONST = 3         # ADVECTIVE FLOW, DISPERSIVE FLOW, ??
 # Segment data type
 # 1=Segment Volume (m3), 2=Segment Depth (m), 3=Segment Velocity (m/sec)
 SEG_VOL = 1
@@ -38,7 +41,7 @@ SEG_SAL = 5
 # 1 = Advective flow, 2= Dispersive flow
 FLOW_ADV = 1
 FLOW_DIS = 2
-
+#FLOW_DIS = 3
 
 class Wasp(object):
 
@@ -291,7 +294,7 @@ class Wasp(object):
         self.segsn = segsn
 
     def setTimeStep(self, ts):
-        """specifies  the  timestep  that  is  used  for  the  hydrodynamic  model  simulation.
+        """Specifies  the  timestep  that  was  used  for  the  hydrodynamic model simulation.
 
         This value only needs to be set once
 
@@ -305,6 +308,44 @@ class Wasp(object):
             print(self.getLastError())
         else:
             self.ts = ts
+
+    def setNumSegConst(self, n):
+        """This function is used to set the number of segment constituents that will be written to the hydrodynamic linkage file
+
+        The current version of the HYDROLINK API assumes a particular order. To get to a particular constituent you must define the earlier ones. Segment constituents are: volume, depth, velocity, temperature and salinity
+
+        Args:
+            n (int): The number constituents to be passed to the file
+        """
+        nn = ct.c_int(n)
+        ie = ct.c_int(0)
+        self.hydro.hlsetnumsegconsts(
+            self.hndl,
+            ct.byref(nn),
+            ct.byref(ie)
+        )
+        if ie.value > 0:
+            print(self.getLastError())
+        self.nsc = n
+
+    def setNumFPConst(self, n):
+        """This function is used to specify the number of flow path constituents. The number of flow path constituents that are passed by the hydrodynamic model is typically a function of the dimensionality of the model
+
+        For models like EFDC the number of flow path constituents is three: 1) Flow 2) Dispersion/residual flow, 3) Direction of Flow. For simple 1 dimensional models like DYNHYD the number of flow path constituents is one, Flow.
+
+        Args:
+            n (int): The number constituents to be passed to the file
+        """
+        nn = ct.c_int(n)
+        ie = ct.c_int(0)
+        self.hydro.hlsetnumfpconsts(
+            self.hndl,
+            ct.byref(nn),
+            ct.byref(ie)
+        )
+        if ie.value > 0:
+            print(self.getLastError())
+        self.nfpc = n
 
     def _setSegData(self, stype, data):
         """Set segments data.
