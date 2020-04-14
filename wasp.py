@@ -32,6 +32,8 @@ CREATOR_HECRAS = 2
 SEG_VOL = 1
 SEG_DEP = 2
 SEG_VEL = 3
+SEG_TEM = 4
+SEG_SAL = 5
 # Flow data type
 # 1 = Advective flow, 2= Dispersive flow
 FLOW_ADV = 1
@@ -308,7 +310,8 @@ class Wasp(object):
         """Set segments data.
 
         Args:
-            stype (int): Type information. 1=Segment Volume (m3), 2=Segment Depth (m), 3=Segment Velocity (m/sec)
+            stype (int): Type information. 1=Segment Volume (m3), 2=Segment Depth (m),
+            3=Segment Velocity (m/sec), 4=Segment Temperature (C), 5=Segment Salinity (!)
             data (list): List of floats with data
         """
         n = len(data)
@@ -332,7 +335,7 @@ class Wasp(object):
         Args:
             vols (list): List of floats with segments volumes
         """
-        self._setSegData(SEG_VOLS, vols)
+        self._setSegData(SEG_VOL, vols)
         self.vols = vols
 
     def setSegDepth(self, deps):
@@ -341,7 +344,7 @@ class Wasp(object):
         Args:
             deps (list): List of floats with segments depths
         """
-        self._setSegData(SEG_DEPS, deps)
+        self._setSegData(SEG_DEP, deps)
         self.deps = deps
 
     def setSegVelocity(self, vels):
@@ -350,8 +353,26 @@ class Wasp(object):
         Args:
             vels (list): List of floats with segments velocities
         """
-        self._setSegData(SEG_VELS, vels)
+        self._setSegData(SEG_VEL, vels)
         self.vels = vels
+
+    def setSegTemperature(self, temps):
+        """Set segments velocities.
+
+        Args:
+            temps (list): List of floats with segments temperatures
+        """
+        self._setSegData(SEG_TEM, temps)
+        self.temps = temps
+
+    def setSegSalinity(self, sals):
+        """Set segments velocities.
+
+        Args:
+            sals (list): List of floats with segments salinities
+        """
+        self._setSegData(SEG_SAL, sals)
+        self.sals = sals
 
     def _setFlowData(self, ftype, data):
         """Set flow data.
