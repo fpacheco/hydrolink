@@ -2,7 +2,7 @@
 Python wrapper for WASP (water quality) libhydrolink
 
 ## Why?
-Need to output from EFDC-MPI (https://github.com/fearghalodonncha/EFDC-MPI) to WASP8 via hydrolink!
+Need to output from EFDC-MPI (https://github.com/fearghalodonncha/EFDC-MPI) and HEC-RAS 2D hydrodynamic models to WASP8 via hydrolink!
 
 ## Work from
 1. hydrolink.f95
@@ -67,6 +67,9 @@ Need to output from EFDC-MPI (https://github.com/fearghalodonncha/EFDC-MPI) to W
 ## From EFDC-MPI to WASP8
 1. EFDC-MPI outputs are NetCDF4 files
 2. You need others
+
+## From HEC-RAS to WASP8
+1. Don't know ... yet!
 
 ## Test
 Put lihydrolink.so in your path or in LD_LIBRAY_PATH:

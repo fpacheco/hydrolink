@@ -11,7 +11,7 @@ elif 'win' in sys.platform:
     LIB_NAME = 'hydrolink.dll'
 elif 'darwin' in sys.platform:
     # Dont know!
-    LIB_NAME = 'hydrolink.dll'
+    LIB_NAME = 'libhydrolink.so'
 else:
     print('Dont know your platform!')
 
@@ -38,10 +38,10 @@ SEG_VEL = 3
 SEG_TEM = 4
 SEG_SAL = 5
 # Flow data type
-# 1 = Advective flow, 2= Dispersive flow
-FLOW_ADV = 1
-FLOW_DIS = 2
-#FLOW_DIS = 3
+# 1 = Advective flow, 2 = Dispersive flow, 3 = Direction
+FLOWP_ADV = 1
+FLOWP_DIS = 2
+FLOWP_DIR = 3
 
 class Wasp(object):
 
@@ -443,7 +443,7 @@ class Wasp(object):
         Args:
             fadvs (list): List of floats with advective flows
         """
-        self._setFlowData(FLOW_ADV, fadvs)
+        self._setFlowData(FLOWP_ADV, fadvs)
         self.fadvs = fadvs
 
     def setFlowDisps(self, fdisps):
@@ -452,5 +452,5 @@ class Wasp(object):
         Args:
             fdisps (list): List of floats with advective flows
         """
-        self._setFlowData(FLOW_DIS, fdisps)
+        self._setFlowData(FLOWP_DIS, fdisps)
         self.fdisps = fdisps
