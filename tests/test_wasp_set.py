@@ -5,7 +5,7 @@ import sys
 import wasp
 
 
-class WaspTestCase(unittest.TestCase):
+class WaspSetTestCase(unittest.TestCase):
 
     def setUp(self):
         self.hydfile = '/tmp/test.HYD'
