@@ -15,6 +15,7 @@ class WaspGetTestCase(unittest.TestCase):
         # self.hydfile.dispose()
         pass
 
+"""
     def test_debug(self):
         w = wasp.Wasp()
         w.setDebug(self.dlevel)
@@ -39,6 +40,7 @@ class WaspGetTestCase(unittest.TestCase):
 
     def test_numfp(self):
         pass
+"""
 
 logging.basicConfig(
     filename='tests_wasp.log',

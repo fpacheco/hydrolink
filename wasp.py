@@ -1,51 +1,13 @@
 """This module is a wrapper for libhydrogeo (WASP 8)"""
-import sys
 import os
 import datetime
 import ctypes as ct
+import constants as co
 
-# Hydrolink library name
-if 'linux' in sys.platform:
-    LIB_NAME = 'libhydrolink.so'
-elif 'win' in sys.platform:
-    LIB_NAME = 'hydrolink.dll'
-elif 'darwin' in sys.platform:
-    # Dont know!
-    LIB_NAME = 'libhydrolink.so'
-else:
-    print('Dont know your platform!')
-
-# Open files for
-OPEN_READ = 0
-OPEN_WRITE = 1
-# Languages (base arrays)
-LANG_C = 0
-LANG_FORTRAN = 1
-# Creator (to inform Wasp)
-CREATOR_EFDC = 1
-CREATOR_EFDCMPI = 1
-CREATOR_DYNHYD = 2
-CREATOR_EPDRIV1 = 3
-CREATOR_HECRAS = 2
-# Number of constituents in HYD files
-NUM_MAX_SEGCONST = 5        # VOLUMEN, DEPTH, VELOCITY, TEMPERATURE, SALINITY
-NUM_MAX_FPCONST = 3         # ADVECTIVE FLOW, DISPERSIVE FLOW, ??
-# Segment data type
-# 1=Segment Volume (m3), 2=Segment Depth (m), 3=Segment Velocity (m/sec)
-SEG_VOL = 1
-SEG_DEP = 2
-SEG_VEL = 3
-SEG_TEM = 4
-SEG_SAL = 5
-# Flow data type
-# 1 = Advective flow, 2 = Dispersive flow, 3 = Direction
-FLOWP_ADV = 1
-FLOWP_DIS = 2
-FLOWP_DIR = 3
 
 class Wasp(object):
 
-    def __init__(self, libname=LIB_NAME, libpath=None):
+    def __init__(self, libname=co.LIB_NAME, libpath=None):
         """Initialization for class
 
         Seach and load the library ... else exit.
@@ -69,7 +31,7 @@ class Wasp(object):
                     libpath = p
                     break
         if not libpath:
-            print('Can NOT find {}'.format(LIB_NAME))
+            print('Can NOT find {}'.format(co.LIB_NAME))
             sys.exit(-1)
         self.lpath = os.path.join(libpath, libname)
         self.hydro = ct.cdll.LoadLibrary(self.lpath)
@@ -99,7 +61,7 @@ class Wasp(object):
         self.hydro.hlgetlasterror(m)
         return m.value.decode('utf-8')
 
-    def open(self, fpath, fmode=OPEN_WRITE):
+    def open(self, fpath, fmode=co.OPEN_WRITE):
         """Open file for reading or writing
 
         Args:
@@ -143,7 +105,7 @@ class Wasp(object):
         else:
             self.cf = cf.value*100
 
-    def setLang(self, lang=LANG_C):
+    def setLang(self, lang=co.LANG_C):
         """Set programming language for the library
 
         Fortran use base 1 arrays. C, C++, python use base 0.
@@ -157,7 +119,7 @@ class Wasp(object):
         if ie.value > 0:
             print(self.getLastError())
 
-    def setCreator(self, creator=CREATOR_EFDCMPI):
+    def setCreator(self, creator=co.CREATOR_EFDCMPI):
         """Inform the library who is the creator for this HYD file
 
         libhydrolink recognizes EFDC, HECRAS, DYNHYD, EPDRIV1 = 3
@@ -376,7 +338,7 @@ class Wasp(object):
         Args:
             vols (list): List of floats with segments volumes
         """
-        self._setSegData(SEG_VOL, vols)
+        self._setSegData(co.SEG_VOL, vols)
         self.vols = vols
 
     def setSegDepth(self, deps):
@@ -385,7 +347,7 @@ class Wasp(object):
         Args:
             deps (list): List of floats with segments depths
         """
-        self._setSegData(SEG_DEP, deps)
+        self._setSegData(co.SEG_DEP, deps)
         self.deps = deps
 
     def setSegVelocity(self, vels):
@@ -394,7 +356,7 @@ class Wasp(object):
         Args:
             vels (list): List of floats with segments velocities
         """
-        self._setSegData(SEG_VEL, vels)
+        self._setSegData(co.SEG_VEL, vels)
         self.vels = vels
 
     def setSegTemperature(self, temps):
@@ -403,7 +365,7 @@ class Wasp(object):
         Args:
             temps (list): List of floats with segments temperatures
         """
-        self._setSegData(SEG_TEM, temps)
+        self._setSegData(co.SEG_TEM, temps)
         self.temps = temps
 
     def setSegSalinity(self, sals):
@@ -412,7 +374,7 @@ class Wasp(object):
         Args:
             sals (list): List of floats with segments salinities
         """
-        self._setSegData(SEG_SAL, sals)
+        self._setSegData(co.SEG_SAL, sals)
         self.sals = sals
 
     def _setFlowData(self, ftype, data):
@@ -443,7 +405,7 @@ class Wasp(object):
         Args:
             fadvs (list): List of floats with advective flows
         """
-        self._setFlowData(FLOWP_ADV, fadvs)
+        self._setFlowData(co.FLOWP_ADV, fadvs)
         self.fadvs = fadvs
 
     def setFlowDisps(self, fdisps):
@@ -452,5 +414,5 @@ class Wasp(object):
         Args:
             fdisps (list): List of floats with advective flows
         """
-        self._setFlowData(FLOWP_DIS, fdisps)
+        self._setFlowData(co.FLOWP_DIS, fdisps)
         self.fdisps = fdisps

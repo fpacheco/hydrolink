@@ -3,6 +3,8 @@ import datetime
 import logging
 import sys
 import wasp
+import constants as co
+
 
 
 class WaspSetTestCase(unittest.TestCase):
@@ -29,7 +31,7 @@ class WaspSetTestCase(unittest.TestCase):
     def test_open(self):
         w = wasp.Wasp()
         w.setDebug(self.dlevel)
-        w.open(self.hydfile, wasp.OPEN_WRITE)
+        w.open(self.hydfile, co.OPEN_WRITE)
         w.close()
 
     def test_run2D(self):
@@ -44,8 +46,8 @@ class WaspSetTestCase(unittest.TestCase):
         w = wasp.Wasp()
         w.setDebug(self.dlevel)
         # Default write
-        w.open(self.hydfile, wasp.OPEN_WRITE)
-        w.setLang(wasp.LANG_C)
+        w.open(self.hydfile, co.OPEN_WRITE)
+        w.setLang(co.LANG_C)
         w.setDescriptions(self.desc)
         w.setAuthor(self.author)
         w.setMoment(self.dt)
